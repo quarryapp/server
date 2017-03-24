@@ -1,0 +1,11 @@
+[{
+    "type": "feedly",
+    "name": "The New York Times",
+    "feedUrl": "feed/http://www.nytimes.com/services/xml/rss/nyt/HomePage.xml"
+}, {
+    "type": "feedly",
+    "name": "BBC",
+    "feedUrl": "feed/http://newsrss.bbc.co.uk/rss/newsonline_world_edition/front_page/rss.xml"
+}, {
+    "type": "producthunt"
+}]

@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "babel-core": "^6.24.0",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-es2015": "^6.24.0",
+    "babel-preset-es2017": "^6.22.0",
+    "babel-preset-react": "^6.23.0",
+    "babel-preset-stage-0": "^6.22.0",
+    "babel-register": "^6.24.0",
+    "chalk": "^1.1.3",
+    "moment": "^2.18.1",
+    "node-emoji": "^1.5.1",
+    "react": "^15.4.2",
+    "universal-fetch": "^1.0.0",
+    "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.0",
+    "eslint": "^3.18.0"
+  }
+}
