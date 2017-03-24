@@ -11,6 +11,7 @@ import Feedly from './providers/Feedly';
 import ProductHunt from './providers/ProductHunt';
 import GitHub from './providers/GitHub';
 import DesignerNews from './providers/DesignerNews';
+import Reddit from './providers/Reddit';
 
 class POC {
     constructor() {
@@ -24,7 +25,8 @@ class POC {
             Feedly,
             ProductHunt,
             GitHub,
-            DesignerNews
+            DesignerNews,
+            Reddit
         ];
 
         const providerMap = new Map();

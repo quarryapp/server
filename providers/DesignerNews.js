@@ -9,8 +9,8 @@ export default class DesignerNews {
     name = 'DesignerNews';
     feedUrl = '';
     
-    async getCards(): Promise<Card[]> {
-        const resp = await fetch('https://api.designernews.co/api/v2/stories/'),
+    async getCards(amount=10): Promise<Card[]> {
+        const resp = await fetch(`https://api.designernews.co/api/v2/stories/?limit=${amount}`),
             body = await resp.json();
 
         const { stories } = body;
