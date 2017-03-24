@@ -5,16 +5,41 @@ import type { Card } from '../entities/index';
 
 export default (cards: Card[]) => {
     return cards
-        .map(card => {
-            const now = +new Date(), _24hours = (60 * 1000 * 60 * 24), elapsed = now - _24hours;;
+        .map((card: Card) => {
+            // this is a carbon board copy of reddit's hot sorting
+            const order = Math.log10(Math.max(Math.abs(card.score), 1)),
+                seconds = (card.timestamp / 1000) - 1134028003;
+            let sign;
             
-            // calculate 'freshness', a 0 to 10 value indicating how new this card is.
-            // cards older than 24 hours will have negative freshness, this is by design.
-            card.freshness = (card.timestamp - elapsed) / _24hours * 10;
-            
+            if (card.score > 0) {
+                sign = 1;
+            } else if (card.score < 0) {
+                sign = -1;
+            } else {
+                sign = 0;
+            }
+            card.sort = round(sign * order + seconds / 4500, 7);
             return card;
         })
-        .sort((a: Card, b: Card) => {
-            return ((b.weight + b.freshness) - (a.weight + a.freshness));
-        });
+        .sort((a: Card, b: Card) => a.sort - b.sort)
+        .reverse();
+};
+
+const round = (value, exp) => {
+    if (typeof exp === 'undefined' || +exp === 0)
+        return Math.round(value);
+
+    value = +value;
+    exp = +exp;
+
+    if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0))
+        return NaN;
+
+    // Shift
+    value = value.toString().split('e');
+    value = Math.round(+(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp)));
+
+    // Shift back
+    value = value.toString().split('e');
+    return +(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp));
 }

@@ -1,12 +1,16 @@
 // @flow
 
-import Feedly from './providers/Feedly';
 import config from './config.json';
 import { emoji } from 'node-emoji';
 import logger from './logger';
 import sort from './services/sort';
 import chalk from 'chalk';
 import moment from 'moment';
+
+import Feedly from './providers/Feedly';
+import ProductHunt from './providers/ProductHunt';
+import GitHub from './providers/GitHub';
+import DesignerNews from './providers/DesignerNews';
 
 class POC {
     constructor() {
@@ -17,7 +21,10 @@ class POC {
     
     async GoOOOOoOOOoOOoOoOooOooOoo() {
         const providerTypes = [
-            Feedly
+            Feedly,
+            ProductHunt,
+            GitHub,
+            DesignerNews
         ];
 
         const providerMap = new Map();
@@ -49,10 +56,8 @@ class POC {
             }
         }
 
-        cards = sort(cards);
-
-        for(let [index, card] of cards.entries()) {
-            logger.debug(`#${index + 1}: ${chalk.green(card.name)} - ${chalk.yellow(card.title)} (w: ${chalk.gray(card.weight)}, f: ${chalk.gray(card.freshness)} t: ${chalk.gray(moment(card.timestamp).fromNow())})`);
+        for(let [index, card] of sort(cards).entries()) {
+            logger.debug(`#${index + 1}: ${chalk.green(card.name)} - ${chalk.yellow(card.title)} (m: ${chalk.gray(card.sort)}, s: ${chalk.gray(card.score)} t: ${chalk.gray(moment(card.timestamp).fromNow())})`);
         }
     }
 }

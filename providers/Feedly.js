@@ -13,7 +13,7 @@ export default class Feedly {
         this.feedUrl = feedUrl;
     }
     
-    async getCards(amount=25): Promise<Card[]> {
+    async getCards(amount=10): Promise<Card[]> {
         // fyi error handling gets handled by callee
         
         // todo think about continuation (some platforms use pages, others - like feedly - use continuation thingies)
@@ -27,11 +27,11 @@ export default class Feedly {
                 type: Feedly.type,
                 name: this.name,
                 element: <div></div>, // this will contain a react element later on....
-                weight: item.engagementRate,
+                score: Math.round(item.engagementRate * 100),
                 timestamp: item.published,
                 title: item.title,
                 data: {
-                    item
+                    ...item
                 }
             };
             cards.push(card);
