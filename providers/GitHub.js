@@ -13,8 +13,8 @@ export default class GitHub {
     feedUrl = '';
     
     async getCards(): Promise<Card[]> {
-        // const url = `https://api.github.com/search/repositories?q=created:>=${moment().subtract(1, 'day').format('YYYY-MM-DD')}&sort=stars&order=desc`
-        logger.debug(url);
+        const url = `https://api.github.com/search/repositories?q=created:>=${moment().subtract(1, 'day').format('YYYY-MM-DD')}&sort=stars&order=desc`
+        // logger.debug(url);
         const resp = await fetch(url),
             body = await resp.json();
 
