@@ -19,7 +19,6 @@ export default class DesignerNews {
             const card: Card = {
                 type: DesignerNews.type,
                 name: this.name,
-                element: <div></div>, // this will contain a react element later on....
                 score: story.vote_count,
                 timestamp: +moment(story.created_at),
                 title: story.title,

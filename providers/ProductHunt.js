@@ -19,7 +19,6 @@ export default class ProductHunt {
             const card: Card = {
                 type: ProductHunt.type,
                 name: this.name,
-                element: <div></div>, // this will contain a react element later on....
                 score: post.votes_count,
                 timestamp: +moment(post.created_at),
                 title: post.name,

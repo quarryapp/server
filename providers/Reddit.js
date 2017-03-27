@@ -10,7 +10,7 @@ export default class Reddit {
     feedUrl = '';
     
     async getCards(amount=10): Promise<Card[]> {
-        const resp = await fetch('https://www.reddit.com/r/all.json?limit=${amount}'),
+        const resp = await fetch(`https://www.reddit.com/r/all.json?limit=${amount}`),
             { data: { children } } = await resp.json();
 
         let cards = [];
@@ -19,9 +19,8 @@ export default class Reddit {
             const card: Card = {
                 type: Reddit.type,
                 name: this.name,
-                element: <div></div>, // this will contain a react element later on....
                 score: data.score,
-                timestamp: +moment(data.created_utc * 1000),
+                timestamp: data.created_utc * 1000,
                 title: data.title,
                 data: {
                     ...data

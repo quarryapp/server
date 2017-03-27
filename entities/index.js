@@ -1,8 +1,5 @@
-import type { Element } from 'react';
-
 export type Card = Provider & {
     type: string, // provider type
-    element: Element[], // element responsible for rendering this card
     score: number,
     timestamp: number, // publication date
     title: string, // title

@@ -4,6 +4,10 @@
     "feedUrl": "feed/http://www.nytimes.com/services/xml/rss/nyt/HomePage.xml"
 }, {
     "type": "feedly",
+    "name": "BBC",
+    "feedUrl": "feed/http://newsrss.bbc.co.uk/rss/newsonline_world_edition/front_page/rss.xml"
+}, {
+    "type": "feedly",
     "name": "Arstechnica",
     "feedUrl": "feed/http://feeds.arstechnica.com/arstechnica/index/"
 }, {

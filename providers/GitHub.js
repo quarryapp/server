@@ -3,7 +3,8 @@
 import type { Card } from '../entities';
 import React from 'react';
 import moment from 'moment';
-import logger from '../logger';
+import cheerio from 'cheerio';
+import chance from 'chance';
 
 // todo rewrite with github-trending
 
@@ -13,23 +14,30 @@ export default class GitHub {
     feedUrl = '';
     
     async getCards(): Promise<Card[]> {
-        const url = `https://api.github.com/search/repositories?q=created:>=${moment().subtract(1, 'day').format('YYYY-MM-DD')}&sort=stars&order=desc`
-        // logger.debug(url);
-        const resp = await fetch(url),
-            body = await resp.json();
-
-        const { items } = body;
+        // why doesn't this have an api?!
+        
+        const resp = await fetch('https://github.com/trending'),
+            $ = cheerio.load(await resp.text());
+        
         let cards = [];
-        for(let item of items) {
+        for(let child of $('.repo-list li').get()) {
+            // get last commit. sadly we don't have a date at which point this repo became trending, so this'll have to do.
+            const name = $(child).find('h3 > a').first().attr('href').substring(1),
+                noaw = + new Date(),
+                hour = 60 * 1000 * 60,
+                score = $(child).find('span.float-right').text().trim().split(' ')[0].replace(',', '');
+            
             const card: Card = {
                 type: GitHub.type,
                 name: this.name,
-                element: <div></div>, // this will contain a react element later on....
-                score: item.stargazers_count,
-                timestamp: +moment(item.created_at),
-                title: item.full_name,
+                score: score,
+                // huntr's best kept secret: github dates are randomly generated using their name as seed.
+                // why? there's no way to know when this repo started trending. srry!
+                timestamp: +moment(chance(name).integer({min: noaw - (hour * 14), max: noaw - (hour * 2)})),
+                title: name,
                 data: {
-                    ...item
+                    description: $(child).find('.py-1 > .d-inline-block').text().trim(),
+                    language: $(child).find('[itemprop="programmingLanguage"]').text().trim()
                 }
             };
             cards.push(card);
