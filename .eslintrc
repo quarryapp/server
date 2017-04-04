@@ -9,7 +9,6 @@
     ],
     "rules": {
         "semi": ["warn", "always"],
-        "react/prop-types": "off",
         "quotes": ["warn", "single"],
         "no-console": "off",
         "no-debugger": "off"

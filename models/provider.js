@@ -2,8 +2,9 @@ import mongoose from 'mongoose';
 /**
  * Created by Jari on 28/03/2017.
  */
-export default mongoose.model('card', {
+export default mongoose.model('provider', {
     type: String,
     name: String,
-    config: Object
+    config: Object,
+    owner: String // client id
 });

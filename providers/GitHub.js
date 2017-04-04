@@ -1,7 +1,6 @@
 // @flow
 
 import type { Card } from '../entities';
-import React from 'react';
 import moment from 'moment';
 import cheerio from 'cheerio';
 import chance from 'chance';
@@ -21,7 +20,6 @@ export default class GitHub {
         
         let cards = [];
         for(let child of $('.repo-list li').get()) {
-            // get last commit. sadly we don't have a date at which point this repo became trending, so this'll have to do.
             const name = $(child).find('h3 > a').first().attr('href').substring(1),
                 noaw = + new Date(),
                 hour = 60 * 1000 * 60,

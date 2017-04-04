@@ -1,7 +1,6 @@
 // @flow
 
 import type { Card } from '../entities';
-import React from 'react';
 import moment from 'moment';
 
 export default class Reddit {
