@@ -6,8 +6,11 @@ import mongoosePaginate from 'mongoose-paginate';
  */
 const schema = Schema({
     rank: Number,
+    provider: Schema.Types.ObjectId,
     type: String,
     name: String,
+    title: String,
+    order: Number,
     timestamp: Number,
     score: Number,
     owner: Schema.Types.ObjectId,

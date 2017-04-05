@@ -1,5 +1,4 @@
 export type Card = Provider & {
-    type: string, // provider type
     score: number,
     timestamp: number, // publication date
     title: string, // title

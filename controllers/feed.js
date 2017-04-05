@@ -3,12 +3,13 @@
 import { Router } from 'express';
 import Client from '../models/client';
 import Provider from '../models/provider';
+import ClientProvider from '../models/clientprovider';
 import FeedItem from '../models/feeditem';
 import logger from '../logger';
 import providerTypes from '../providers';
 import config from '../config.json';
 import { emoji } from 'node-emoji';
-import sort from '../services/sort';
+import order from '../services/order';
 
 export default class FeedController {
     router = null;
@@ -48,70 +49,83 @@ export default class FeedController {
 
     async getFeed(req, res, next) {
         try {
-            const query = { owner: req.client._id, expiration: { $lte: new Date() } },
-                { _id: owner } = req.client;
+            const { _id: client } = req.client;
             
-            if(await FeedItem.find(query).count() === 0) {
-                logger.debug(`Generating a new feed for client ${req.client.id.toString()}`);
+            const clientProviders = await ClientProvider.find({ client });
+            for(let clientProvider of clientProviders) {
+                const providerModel = await Provider.findOne({
+                    _id: clientProvider.provider
+                });
                 
-                // will contain all initialized providers
-                const availableProviders = [];
-
-                const cardTypes = await Provider.find({ owner });
-
-                for (let card of cardTypes) {
-                    if (this.providerMap.has(card.type)) {
-                        const Provider = this.providerMap.get(card.type);
-
-                        //initialize the provider with the saved card config
-                        const cardProvider = new Provider(card.config);
-                        availableProviders.push(cardProvider);
-                    }
+                if(!providerModel) {
+                    throw new Error('ClientProvider used a non-existing Provider');
                 }
-
-                let cards = [];
-                for (let provider of availableProviders) {
-                    try {
-                        cards = [...cards, ...await provider.getCards()];
-                    } catch (ex) {
-                        logger.error(`${provider.name} failed:`, ex);
+                
+                if (!await FeedItem.find({ expiration: { $lte: new Date() }, type: providerModel.type }).count()) { // todo add config to query
+                    if (!this.providerMap.has(providerModel.type)) {
+                        logger.warn(`Attempted to look for unexisting provider ${providerModel.type} (?!)`);
+                        continue;
                     }
-                }
+                    logger.debug(`Fetching new feed provider ${providerModel.type} (config: ${JSON.stringify(providerModel.config)})`);
+                    
+                    const Provider = this.providerMap.get(providerModel.type);
 
-                for (let [index, card] of sort(cards).entries()) {
-                    const cardModel = new FeedItem({
-                        ...card,
-                        owner,
-                        rank: index + 1,
-                        expiration: new Date(new Date() + config.expiration)
-                    });
-                    await cardModel.save();
+                    //initialize the provider with the saved card config
+                    const cardProvider = new Provider(providerModel.config);
+                    
+                    const cards = await cardProvider.getCards();
+                    for (let card of cards) {
+                        const cardModel = new FeedItem({
+                            ...card,
+                            order: order(card),
+                            expiration: new Date(new Date() + config.expiration)
+                        });
+                        await cardModel.save();
+                    }
                 }
             }
-
+            
             const { page } = req.query;
-            res.send(await FeedItem.paginate(query, { page, sort: { rank: 1 } }));
+            res.send(await FeedItem.paginate({ expiration: { $lte: new Date() } }, { page, sort: { order: -1 } }));
         }
 
         catch (ex) {
             next(ex);
         }
     }
-    
+
     async putProvider(req, res, next) {
         try {
             // todo 'type' param validation
             // todo check if provider type is in providerMap
+
+            const { type, config } = req.body,
+                { _id: client } = req.client;
             
-            const { type } = req.body;
-            const provider = new Provider({
-                type,
-                owner: req.client._id
+            if(!await Provider.find({ type, config }).count()) {
+                const provider = new Provider({
+                    type,
+                    config
+                });
+                await provider.save();
+            }
+            
+            const {_id: provider } = await Provider.findOne({ type, config });
+            if(await ClientProvider.findOne({ provider, client })) {
+                return res.status(409).send({
+                    error: 'Provider was already added'
+                });
+            }
+            
+            const clientProvider = new ClientProvider({
+                provider,
+                client 
             });
-            await provider.save();
+            await clientProvider.save();
+            
             res.status(201).send(emoji.the_horns);
         }
-        catch(ex) {
+        catch (ex) {
             next(ex);
         }
     }
