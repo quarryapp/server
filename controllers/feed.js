@@ -61,7 +61,7 @@ export default class FeedController {
                     throw new Error('ClientProvider used a non-existing Provider');
                 }
                 
-                if (!await FeedItem.find({ expiration: { $lte: new Date() }, type: providerModel.type }).count()) { // todo add config to query
+                if (!await FeedItem.find({ expiration: { $gte: new Date() }, type: providerModel.type }).count()) { // todo add config to query
                     if (!this.providerMap.has(providerModel.type)) {
                         logger.warn(`Attempted to look for unexisting provider ${providerModel.type} (?!)`);
                         continue;
@@ -78,7 +78,7 @@ export default class FeedController {
                         const cardModel = new FeedItem({
                             ...card,
                             order: order(card),
-                            expiration: new Date(new Date() + config.expiration)
+                            expiration: new Date(+(new Date()) + config.expiration)
                         });
                         await cardModel.save();
                     }
@@ -86,7 +86,7 @@ export default class FeedController {
             }
             
             const { page } = req.query;
-            res.send(await FeedItem.paginate({ expiration: { $lte: new Date() } }, { page, sort: { order: -1 } }));
+            res.send(await FeedItem.paginate({ expiration: { $gte: new Date() } }, { page, sort: { order: -1 } }));
         }
 
         catch (ex) {
@@ -98,6 +98,7 @@ export default class FeedController {
         try {
             // todo 'type' param validation
             // todo check if provider type is in providerMap
+            // todo config validation
 
             const { type, config } = req.body,
                 { _id: client } = req.client;
