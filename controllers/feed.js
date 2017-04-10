@@ -72,8 +72,10 @@ export default class FeedController {
                 if(!providerModel) {
                     throw new Error('ClientProvider used a non-existing Provider');
                 }
-                
-                if (!await FeedItem.find({ expiration: { $gte: new Date() }, owner: providerModel._id }).count()) { // todo add config to query
+
+                // todo better cache check... 
+                // todo if a provider returns 0 cards this will cause the provider to get called every time we do a refresh.
+                if (!await FeedItem.find({ expiration: { $gte: new Date() }, owner: providerModel._id }).count()) {
                     try {
                         logger.debug(`Fetching new feed provider ${providerModel.type} (config: ${JSON.stringify(providerModel.config)})`);
 
@@ -150,7 +152,7 @@ export default class FeedController {
             }
             
             await cP.remove();
-            res.status(201).send(emoji.the_horns);
+            res.status(200).send(emoji.the_horns);
         } catch(ex) {
             next(ex);
         }
