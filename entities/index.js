@@ -8,5 +8,6 @@ export type Card = Provider & {
 export type Provider = {
     type: string,
     name: string, // provider name (can by dynamic, though)
-    getCards: () => {}
+    getCards: Function,
+    validateConfig: Function
 };

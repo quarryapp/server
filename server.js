@@ -10,6 +10,8 @@ import promisify from 'es6-promisify';
 import detect from 'detect-port';
 import bodyParser from 'body-parser';
 import expressValidator from 'express-validator';
+import providers from './providers';
+import type { Provider } from './entities/index';
 
 class Server {
     constructor() {
@@ -24,7 +26,24 @@ class Server {
                 readDir = promisify(fs.readdir);
 
             app.use(bodyParser.json());
-            app.use(expressValidator());
+            app.use(expressValidator({
+                customValidators: {
+                    isValidConfig: (config: any, type: string) => {
+                        const provider = providers.find((provider: Provider) => provider.type === type);
+                        if(provider == null) {
+                            // we're only responsible for the config so w/e
+                            return true;
+                        }
+                        if('validateConfig' in provider) {
+                            return provider.validateConfig(config);
+                        } else {
+                            // supplied provider doesn't support configs
+                            return true;
+                        }
+                    },
+                    isValidProvider: (type: string) => providers.some((provider: Provider) => provider.type === type)
+                }
+            }));
             
             const path = __dirname + '/controllers';
             for(const file of await readDir(path)) {

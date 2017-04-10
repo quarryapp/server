@@ -10,13 +10,13 @@ import providerTypes from '../providers';
 import config from '../config.json';
 import { emoji } from 'node-emoji';
 import order from '../services/order';
+import { Types } from 'mongoose';
 
 export default class FeedController {
-    router = null;
+    router = Router();
     providerMap = new Map();
 
     constructor(app) {
-        this.router = Router();
         app.use('/feed', this.router);
 
         for (let provider of providerTypes) {
@@ -45,11 +45,23 @@ export default class FeedController {
 
         this.router.get('/', this.getFeed.bind(this));
         this.router.put('/provider', this.putProvider.bind(this));
+        this.router.delete('/provider', this.deleteProvider.bind(this));
+        this.router.get('/provider', this.getProvider.bind(this));
     }
 
     async getFeed(req, res, next) {
         try {
             const { _id: client } = req.client;
+            
+            req.checkQuery('page', 'Invalid page').optional().isInt({min: 1});
+
+            const validationResult = await req.getValidationResult();
+
+            if(!validationResult.isEmpty()) {
+                return res.status(400).send({
+                    errors: validationResult.array()
+                });
+            }
             
             const clientProviders = await ClientProvider.find({ client });
             for(let clientProvider of clientProviders) {
@@ -61,44 +73,126 @@ export default class FeedController {
                     throw new Error('ClientProvider used a non-existing Provider');
                 }
                 
-                if (!await FeedItem.find({ expiration: { $gte: new Date() }, type: providerModel.type }).count()) { // todo add config to query
-                    if (!this.providerMap.has(providerModel.type)) {
-                        logger.warn(`Attempted to look for unexisting provider ${providerModel.type} (?!)`);
+                if (!await FeedItem.find({ expiration: { $gte: new Date() }, owner: providerModel._id }).count()) { // todo add config to query
+                    try {
+                        logger.debug(`Fetching new feed provider ${providerModel.type} (config: ${JSON.stringify(providerModel.config)})`);
+
+                        const Provider = this.providerMap.get(providerModel.type);
+
+                        if(!Provider) {
+                            throw new Error('Attempted to load a non-existing provider from database into memory!');
+                        }
+
+                        //initialize the provider
+                        const cardProvider = new Provider(providerModel);
+
+                        const cards = await cardProvider.getCards();
+                        for (let card of cards) {
+                            const cardModel = new FeedItem({
+                                ...card,
+                                owner: providerModel._id,
+                                order: order(card),
+                                expiration: new Date(+(new Date()) + config.expiration)
+                            });
+                            await cardModel.save();
+                        }
+                    }
+                    catch(ex) {
+                        logger.error(ex);
                         continue;
                     }
-                    logger.debug(`Fetching new feed provider ${providerModel.type} (config: ${JSON.stringify(providerModel.config)})`);
                     
-                    const Provider = this.providerMap.get(providerModel.type);
-
-                    //initialize the provider with the saved card config
-                    const cardProvider = new Provider(providerModel.config);
-                    
-                    const cards = await cardProvider.getCards();
-                    for (let card of cards) {
-                        const cardModel = new FeedItem({
-                            ...card,
-                            order: order(card),
-                            expiration: new Date(+(new Date()) + config.expiration)
-                        });
-                        await cardModel.save();
-                    }
                 }
             }
             
             const { page } = req.query;
-            res.send(await FeedItem.paginate({ expiration: { $gte: new Date() } }, { page, sort: { order: -1 } }));
+            res.send(await FeedItem.paginate({
+                owner: { $in: clientProviders.map(cP => cP.provider) },
+                expiration: { $gte: new Date() }
+            }, { 
+                page, 
+                sort: { order: -1 } 
+            }));
         }
 
         catch (ex) {
             next(ex);
         }
     }
+    
+    async deleteProvider(req, res, next) {
+        try {
+            const ERR_MSG = 'Invalid provider ID';
+            req.checkBody('id', ERR_MSG).isMongoId();
+
+            const validationResult = await req.getValidationResult();
+            if(!validationResult.isEmpty()) {
+                return res.status(400).send({
+                    errors: validationResult.array()
+                });
+            }
+
+            const { id } = req.body, { _id: client } = req.client;
+            
+            const cP = await ClientProvider.findOne({
+                _id: new Types.ObjectId(id),
+                client
+            });
+            
+            if(!cP) {
+                return res.status(400).send({
+                    errors: [{
+                        param: 'id',
+                        msg: ERR_MSG,
+                        value: req.body.id
+                    }]
+                });
+            }
+            
+            await cP.remove();
+            res.status(201).send(emoji.the_horns);
+        } catch(ex) {
+            next(ex);
+        }
+    }
+    
+    async getProvider(req, res, next) {
+        try {
+            const clientProviders = await ClientProvider.find({client: req.client._id}).lean();
+            
+            let providers = [];
+            for(let clientProvider of clientProviders) {
+                const provider = await Provider.findOne({_id: clientProvider.provider}).lean();
+                
+                //clean up response
+                delete clientProvider.client;
+                delete clientProvider.provider;
+                delete clientProvider.__v;
+                delete provider.__v;
+                
+                providers = [...providers, {
+                    ...provider,
+                    ...clientProvider
+                }];
+            }
+            res.status(200).send(providers);
+        } catch(ex) {
+            next(ex);
+        }
+    }
 
     async putProvider(req, res, next) {
         try {
-            // todo 'type' param validation
-            // todo check if provider type is in providerMap
-            // todo config validation
+            req.checkBody('type', 'Invalid provider type supplied').isAlpha().isValidProvider();
+            req.checkBody('config', 'Invalid provider config supplied').isValidConfig(req.body.type);
+            
+            const validationResult = await req.getValidationResult();
+            
+            if(!validationResult.isEmpty()) {
+                return res.status(400).send({
+                    errors: validationResult.array()
+                });
+            }
 
             const { type, config } = req.body,
                 { _id: client } = req.client;
@@ -114,7 +208,9 @@ export default class FeedController {
             const {_id: provider } = await Provider.findOne({ type, config });
             if(await ClientProvider.findOne({ provider, client })) {
                 return res.status(409).send({
-                    error: 'Provider was already added'
+                    errors: [{
+                        msg: 'Provider was already added.',
+                    }]
                 });
             }
             
