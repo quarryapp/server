@@ -54,7 +54,7 @@ export default class Feedly {
             const card: Card = {
                 type: Feedly.type,
                 name: this.name || body.title,
-                score: Math.round(item.engagementRate * 10),
+                score: Math.round(item.engagementRate * 100),
                 timestamp: item.published,
                 title: item.title,
                 data: {

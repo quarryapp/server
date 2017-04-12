@@ -88,6 +88,7 @@ export default class FeedController {
                         //initialize the provider
                         const cardProvider = new Provider(providerModel);
 
+                        // todo: Promise.all()
                         const cards = await cardProvider.getCards();
                         for (let card of cards) {
                             const cardModel = new FeedItem({

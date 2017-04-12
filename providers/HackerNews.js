@@ -3,23 +3,23 @@
 import type { Card } from '../entities';
 import moment from 'moment';
 
-export default class ProductHunt {
-    static type = 'producthunt';
-    name = 'ProductHunt';
+export default class HackerNews {
+    static type = 'hackernews';
+    name = 'HackerNews';
     
     async getCards(): Promise<Card[]> {
-        const resp = await fetch('https://api.producthunt.com/v1/posts?access_token=dc7c32494478755134d0119a32ab620828ca7eea2b4b26f4e272b2472ac8680b'),
+        const resp = await fetch('https://hn.algolia.com/api/v1/search?tags=front_page'),
             body = await resp.json();
 
-        const { posts } = body;
+        const { hits } = body;
         let cards = [];
-        for(let post of posts) {
+        for(let post of hits) {
             const card: Card = {
-                type: ProductHunt.type,
+                type: HackerNews.type,
                 name: this.name,
-                score: post.votes_count,
+                score: post.points,
                 timestamp: +moment(post.created_at),
-                title: post.name,
+                title: post.title,
                 data: {
                     ...post
                 }
