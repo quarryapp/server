@@ -24,19 +24,25 @@ export default class GitHub {
                 hour = 60 * 1000 * 60,
                 score = $(child).find('span.float-right').text().trim().split(' ')[0].replace(',', '');
 
+            // github dates are randomly generated using their name as seed.
+            // why? there's no way to know when this repo started trending. srry!
+
             const date = moment()
                 .hours(0)
                 .minutes(0)
                 .seconds(0)
                 .add(chance(name).integer({ min: 0, max: hour * 24 }), 'milliseconds');
+            
+            if(moment().isBefore(date)) {
+                // this project "hasn't been published yet"
+                // a straight out lie!! but we can't have projects with a date past today
+                continue;
+            }
 
             const card: Card = {
                 type: GitHub.type,
                 name: this.name,
                 score: score,
-                // huntr's best kept secret: github dates are randomly generated using their name as seed.
-                // why? there's no way to know when this repo started trending. srry!
-                // todo randomize timestamp over current day
                 timestamp: +date,
                 title: name,
                 data: {
