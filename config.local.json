@@ -1,5 +1,6 @@
 {
     "connectionString": "mongodb://localhost/huntr",
     "port": 3131,
-    "expiration": 600000
+    "expiration": 600000,
+    "whitelistedHosts": []
 }

@@ -5,8 +5,6 @@ import moment from 'moment';
 import cheerio from 'cheerio';
 import chance from 'chance';
 
-// todo rewrite with github-trending
-
 export default class GitHub {
     static type = 'github';
     name = 'GitHub';

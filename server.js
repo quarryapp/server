@@ -10,6 +10,7 @@ import promisify from 'es6-promisify';
 import detect from 'detect-port';
 import bodyParser from 'body-parser';
 import expressValidator from 'express-validator';
+import cors from 'cors';
 import providers from './providers';
 import type { Provider } from './entities/index';
 
@@ -25,6 +26,12 @@ class Server {
             const app = express(),
                 readDir = promisify(fs.readdir);
 
+            
+            app.use(cors({
+                origin: (origin, callback) => 
+                    config.whitelistedHosts.includes(origin) ? callback(null, true) : callback(new Error('Incorrect origin'))
+            }));
+            
             app.use(bodyParser.json());
             app.use(expressValidator({
                 customValidators: {
