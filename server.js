@@ -37,7 +37,7 @@ class Server {
                 customValidators: {
                     isValidConfig: (config: any, type: string) => {
                         const provider = providers.find((provider: Provider) => provider.type === type);
-                        if(provider == null) {
+                        if(provider === null) {
                             // we're only responsible for the config so w/e
                             return true;
                         }
