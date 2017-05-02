@@ -17,7 +17,7 @@ export default class GitHub {
             $ = cheerio.load(await resp.text());
 
         let cards = [];
-        for (let child of $('.repo-list li').get()) {
+        for (let [index, child] of $('.repo-list li').get().entries()) {
             const name = $(child).find('h3 > a').first().attr('href').substring(1),
                 hour = 60 * 1000 * 60,
                 score = $(child).find('span.float-right').text().trim().split(' ')[0].replace(',', '');
@@ -37,9 +37,17 @@ export default class GitHub {
                 continue;
             }
 
+            let size = 'small';
+            if(index < 2) {
+                size = 'medium';
+            }
+
             const card: Card = {
                 type: GitHub.type,
                 name: this.name,
+                size,
+                url: 'https://github.com/' + name,
+                ranking: index + 1,
                 score: score,
                 timestamp: +date,
                 title: name,

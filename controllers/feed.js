@@ -113,6 +113,7 @@ export default class FeedController {
                 owner: { $in: clientProviders.map(cP => cP.provider) },
                 expiration: { $gte: new Date() }
             }, { 
+                limit: 25,
                 page, 
                 sort: { order: -1 } 
             }));

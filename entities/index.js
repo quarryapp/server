@@ -1,4 +1,8 @@
-export type Card = Provider & {
+export type Card = {
+    type: string,
+    name: string,
+    ranking: number, // the original ranking by source itself
+    size: 'small' | 'medium' | 'large',
     score: number,
     timestamp: number, // publication date
     title: string, // title

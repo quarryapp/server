@@ -7,6 +7,9 @@ import mongoosePaginate from 'mongoose-paginate';
 const schema = Schema({
     rank: Number,
     provider: Schema.Types.ObjectId,
+    size: String,
+    url: String,
+    ranking: Number,
     type: String,
     name: String,
     title: String,
@@ -15,7 +18,7 @@ const schema = Schema({
     score: Number,
     owner: Schema.Types.ObjectId,
     expiration: Date,
-    date: Object
+    data: Object
 });
 
 schema.plugin(mongoosePaginate);

@@ -50,11 +50,19 @@ export default class Feedly {
 
         const { items } = body;
         let cards = [];
-        for (let item of items) {
+        for (let [index, item] of items.entries()) {
+            let size = 'small';
+            if(index < 2) {
+                size = 'medium';
+            }
+            
             const card: Card = {
                 type: Feedly.type,
                 name: this.name || body.title,
+                size,
+                order: index + 1,
                 score: Math.round(item.engagementRate * 100),
+                url: item.canonicalUrl,
                 timestamp: item.published,
                 title: item.title,
                 data: {

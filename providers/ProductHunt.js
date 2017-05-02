@@ -13,9 +13,17 @@ export default class ProductHunt {
 
         const { posts } = body;
         let cards = [];
-        for(let post of posts) {
+        for(let [index, post] of posts.entries()) {
+            let size = 'small';
+            if(index < 2) {
+                size = 'medium';
+            }
+            
             const card: Card = {
                 type: ProductHunt.type,
+                size,
+                ranking: index + 1,
+                url: post.redirect_url, 
                 name: this.name,
                 score: post.votes_count,
                 timestamp: +moment(post.created_at),

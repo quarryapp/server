@@ -13,10 +13,17 @@ export default class HackerNews {
 
         const { hits } = body;
         let cards = [];
-        for(let post of hits) {
+        for(let [index, post] of hits.entries()) {
+            let size = 'small';
+            if(index < 2) {
+                size = 'medium';
+            }
+            
             const card: Card = {
                 type: HackerNews.type,
                 name: this.name,
+                url: post.url,
+                size,
                 score: post.points,
                 timestamp: +moment(post.created_at),
                 title: post.title,
