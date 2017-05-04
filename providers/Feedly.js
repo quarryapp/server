@@ -60,7 +60,7 @@ export default class Feedly {
                 type: Feedly.type,
                 name: this.name || body.title,
                 size,
-                order: index + 1,
+                ranking: index + 1,
                 score: Math.round(item.engagementRate * 100),
                 url: item.canonicalUrl,
                 timestamp: item.published,
