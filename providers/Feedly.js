@@ -56,17 +56,26 @@ export default class Feedly {
                 size = 'medium';
             }
             
+            let { visual } = item;
+            const { summary } = item;
+            
+            // normalize weird feedly fields
+            if(visual.url === 'none') {
+                visual.url = null;
+            }
+            
             const card: Card = {
                 type: Feedly.type,
                 name: this.name || body.title,
                 size,
                 ranking: index + 1,
                 score: Math.round(item.engagementRate * 100),
-                url: item.canonicalUrl,
+                url: item.originId,
                 timestamp: item.published,
                 title: item.title,
                 data: {
-                    ...item
+                    summary,
+                    visual
                 }
             };
             cards.push(card);
