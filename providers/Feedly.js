@@ -43,8 +43,7 @@ export default class Feedly {
     }
 
     async getCards(amount: number = 10): Promise<Card[]> {
-        // todo think about continuation (some platforms use pages, others - like feedly - use continuation thingies)
-        const resp = await fetch(`https://feedly.com/v3/streams/contents?streamId=${encodeURI(this.feedUrl)}&count=${amount}&ranked=newest&similar=true&ck=1490204582101&ct=feedly.desktop&cv=30.0.1310`);
+        const resp = await fetch(`https://feedly.com/v3/streams/contents?streamId=${encodeURI(this.feedUrl)}&count=${amount}&hours=24&similar=true&ck=1490204582101&ct=feedly.desktop&cv=30.0.1310`);
         throwIfNotOK(resp);
         const body = await resp.json();
 
@@ -75,7 +74,7 @@ export default class Feedly {
                 name: this.name || body.title,
                 size,
                 ranking: index + 1,
-                score: Math.round(item.engagementRate * 100),
+                score: item.engagement,
                 url: item.originId,
                 timestamp: item.published,
                 title: item.title,
