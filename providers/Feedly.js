@@ -48,7 +48,7 @@ export default class Feedly {
         throwIfNotOK(resp);
         const body = await resp.json();
 
-        const { items } = body;
+        const { items, direction } = body;
         let cards = [];
         for (let [index, item] of items.entries()) {
             let size = 'small';
@@ -56,8 +56,14 @@ export default class Feedly {
                 size = 'medium';
             }
             
-            let { visual } = item;
-            const { summary } = item;
+            let { visual } = item, content = null;
+            
+            // perferably we use the summary, else we'll use the content as fallback
+            if(item.summary) {
+                content = item.summary;
+            } else if(item.content) {
+                content = item.content;
+            }
             
             // normalize weird feedly fields
             if(visual.url === 'none') {
@@ -74,7 +80,8 @@ export default class Feedly {
                 timestamp: item.published,
                 title: item.title,
                 data: {
-                    summary,
+                    direction,
+                    content,
                     visual
                 }
             };

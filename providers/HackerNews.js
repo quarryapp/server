@@ -24,6 +24,7 @@ export default class HackerNews {
                 name: this.name,
                 url: post.url,
                 size,
+                ranking: index + 1,
                 score: post.points,
                 timestamp: +moment(post.created_at),
                 title: post.title,

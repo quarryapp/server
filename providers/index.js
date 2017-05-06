@@ -4,6 +4,7 @@ import GitHub from './GitHub';
 import DesignerNews from './DesignerNews';
 import Reddit from './Reddit';
 import HackerNews from './HackerNews';
+import Dribbble from './Dribbble';
 
 export default [
     Feedly,
@@ -11,5 +12,6 @@ export default [
     GitHub,
     DesignerNews,
     Reddit,
-    HackerNews
+    HackerNews,
+    Dribbble
 ];
