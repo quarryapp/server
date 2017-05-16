@@ -24,10 +24,10 @@ export default class Dribbble {
             
             // dribbble does something weird here, it basically gives us a list of what was trending yesterday.
             // our algorithm does not like that, at all, and will rank all dribbble entries very low because of this.
-            // this forces us to play around with the timestamps a little; we'll divide the difference from now by 4
+            // this forces us to play around with the timestamps a little; we'll divide the difference from now by 3
             const realDate = moment(post.created_at);
             const now = moment();
-            const date = moment(+now - now.diff(realDate) / 4);
+            const date = moment(+now - now.diff(realDate) / 3);
             
             const card: Card = {
                 type: Dribbble.type,

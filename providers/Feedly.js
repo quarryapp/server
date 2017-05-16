@@ -65,7 +65,7 @@ export default class Feedly {
             }
             
             // normalize weird feedly fields
-            if(visual.url === 'none') {
+            if(visual && visual.url === 'none') {
                 visual.url = null;
             }
             
