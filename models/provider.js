@@ -6,5 +6,6 @@ export default mongoose.model('provider', {
     type: String,
     name: String,
     config: Object,
+    data: Object,
     owner: String // client id
 });

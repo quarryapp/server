@@ -1,5 +1,3 @@
-// @flow
-
 import { Router } from 'express';
 import Client from '../models/client';
 import Provider from '../models/provider';
@@ -11,6 +9,7 @@ import config from '../config.json';
 import { emoji } from 'node-emoji';
 import order from '../services/order';
 import { Types } from 'mongoose';
+import providers from '../providers';
 
 export default class FeedController {
     router = Router();
@@ -191,11 +190,18 @@ export default class FeedController {
             req.checkBody('config', 'Invalid provider config supplied').isValidConfig(req.body.type);
             
             const validationResult = await req.getValidationResult();
-            
             if(!validationResult.isEmpty()) {
                 return res.status(400).send({
                     errors: validationResult.array()
                 });
+            }
+            
+            // todo better naming!!! holy shit
+            let data = null;
+            const ProviderInstance = providers.find((provider: Provider) => req.body.type === provider.type);
+            const providerInstance = new ProviderInstance(req.body);
+            if('getData' in providerInstance) {
+                data = await providerInstance.getData();
             }
 
             const { type, config } = req.body,
@@ -204,7 +210,8 @@ export default class FeedController {
             if(!await Provider.find({ type, config }).count()) {
                 const provider = new Provider({
                     type,
-                    config
+                    config,
+                    data
                 });
                 await provider.save();
             }

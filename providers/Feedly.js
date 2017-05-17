@@ -10,10 +10,18 @@ type FeedlyConfig = {
     feedUrl: string
 };
 
+type FeedlyData = {
+    iconUrl?: string,
+    logoUrl?: string
+}
+
+const FEEDLY_SEARCH_URL = (feedUrl: string) => `https://feedly.com/v3/search/feeds?q=${encodeURIComponent(feedUrl)}&n=1&fullTerm=false&organic=true&promoted=true&locale=en&ck=1494109051099&ct=feedly.desktop&cv=30.0.1324`;
+const FEEDLY_STREAM_URL = (feedUrl: string, amount: number) => `https://feedly.com/v3/streams/contents?streamId=${encodeURI(feedUrl)}&count=${amount}&hours=24&similar=true&ck=1490204582101&ct=feedly.desktop&cv=30.0.1310`;
+
 export default class Feedly {
     static type = 'feedly';
-    static validateConfig(config: FeedlyConfig) {
-        logger.debug('feedly validateConfig', config);
+    static async validateConfig(config: FeedlyConfig) {
+        logger.debug('feedly validateConfig', typeof config, config);
         if(typeof config !== 'object') {
             return false;
         }
@@ -29,21 +37,44 @@ export default class Feedly {
         if (!isUrl(config.feedUrl.substring(5))) {
             return false;
         }
-
+        
+        const response = await fetch(FEEDLY_SEARCH_URL(config.feedUrl));
+        if(!response.ok) {
+            return false;
+        }
+        const { results } = await response.json();
+        if(!results.length) {
+            return false;
+        }
+        
         return true;
+    }
+
+    async getData(): FeedlyData {
+        const response = await fetch(FEEDLY_SEARCH_URL(this.feedUrl));
+        throwIfNotOK(response);
+        const { results } = await response.json();
+
+        const { logo, wordmark, visualUrl, iconUrl } = results[0];
+        return {
+            iconUrl,
+            logoUrl: logo || wordmark || visualUrl || null
+        };
     }
     
     
     name = '';
     feedUrl = '';
+    data: ?FeedlyData = null;
 
-    constructor({ config: { feedUrl }, name }: { config: FeedlyConfig, name: string }) {
+    constructor({ config: { feedUrl }, name, data }: { config: FeedlyConfig, name: string, data: FeedlyData }) {
         this.name = name;
         this.feedUrl = feedUrl;
+        this.data = data;
     }
 
     async getCards(amount: number = 10): Promise<Card[]> {
-        const resp = await fetch(`https://feedly.com/v3/streams/contents?streamId=${encodeURI(this.feedUrl)}&count=${amount}&hours=24&similar=true&ck=1490204582101&ct=feedly.desktop&cv=30.0.1310`);
+        const resp = await fetch(FEEDLY_STREAM_URL(this.feedUrl, amount));
         throwIfNotOK(resp);
         const body = await resp.json();
 
@@ -69,6 +100,12 @@ export default class Feedly {
                 visual.url = null;
             }
             
+            let logoUrl, iconUrl;
+            if(this.data) {
+                logoUrl = this.data.logoUrl;
+                iconUrl = this.data.iconUrl;
+            }
+            
             const card: Card = {
                 type: Feedly.type,
                 name: this.name || body.title,
@@ -81,7 +118,9 @@ export default class Feedly {
                 data: {
                     direction,
                     content,
-                    visual
+                    visual,
+                    logoUrl,
+                    iconUrl
                 }
             };
             cards.push(card);

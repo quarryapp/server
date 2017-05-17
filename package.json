@@ -24,6 +24,7 @@
     "moment": "^2.18.1",
     "mongoose": "^4.9.2",
     "mongoose-paginate": "^5.0.3",
+    "morgan": "^1.8.1",
     "node-emoji": "^1.5.1",
     "universal-fetch": "^1.0.0",
     "validate": "^3.0.1",

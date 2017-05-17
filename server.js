@@ -13,6 +13,7 @@ import expressValidator from 'express-validator';
 import cors from 'cors';
 import providers from './providers';
 import type { Provider } from './entities/index';
+import morgan from 'morgan';
 
 class Server {
     constructor() {
@@ -32,17 +33,24 @@ class Server {
                     config.whitelistedHosts.includes(origin) ? callback(null, true) : callback(new Error('Incorrect origin'))
             }));
             
+            app.use(morgan('dev'));
+            
             app.use(bodyParser.json());
             app.use(expressValidator({
                 customValidators: {
-                    isValidConfig: (config: any, type: string) => {
+                    isValidConfig: async (config: any, type: string) => {
                         const provider = providers.find((provider: Provider) => provider.type === type);
                         if(provider === null) {
                             // we're only responsible for the config so w/e
                             return true;
                         }
                         if('validateConfig' in provider) {
-                            return provider.validateConfig(config);
+                            const validation = provider.validateConfig(config);
+                            if(validation.constructor === Promise) {
+                                await validation;
+                            } else {
+                                return validation;
+                            }
                         } else {
                             // supplied provider doesn't support configs
                             return true;
