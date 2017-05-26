@@ -2,5 +2,6 @@
     "connectionString": "mongodb://localhost/huntr",
     "port": 3131,
     "expiration": 600000,
-    "whitelistedHosts": ["http://localhost:3000", "chrome-extension://gaigloapcdcdfcodbjdkmbgchajadcjk"]
+    "whitelistedHosts": ["http://localhost:3000", "chrome-extension://gaigloapcdcdfcodbjdkmbgchajadcjk"],
+    "url": "http://localhost:3131/"
 }

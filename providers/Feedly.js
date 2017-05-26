@@ -5,6 +5,10 @@ import throwIfNotOK from '../services/throwIfNotOK';
 import isEqual from 'lodash/isEqual';
 import isUrl from 'validator/lib/isUrl';
 import logger from '../logger';
+import { extension } from 'mime-types';
+import fs from 'fs';
+import * as path from 'path';
+import appConfig from '../config.json';
 
 type FeedlyConfig = {
     feedUrl: string
@@ -49,16 +53,36 @@ export default class Feedly {
         
         return true;
     }
+    
+    async _rehostLogo(url: string): Promise<string> {
+        const response = await fetch(url);
+        const contentType = response.headers.get('content-type');
+        const ext = extension(contentType);
+        logger.debug(contentType, ext);
+        const filename = path.basename(url, ext) + '.' + ext;
+        const dest = fs.createWriteStream(`${__dirname}/../public/cdn/${filename}`);
+        response.body.pipe(dest);
+        return appConfig.url + 'cdn/' + filename;
+    }
 
     async getData(): FeedlyData {
         const response = await fetch(FEEDLY_SEARCH_URL(this.feedUrl));
         throwIfNotOK(response);
         const { results } = await response.json();
 
-        const { logo, wordmark, visualUrl, iconUrl } = results[0];
+        let { logo, wordmark, visualUrl, iconUrl } = results[0];
+        let logoUrl = logo || wordmark || visualUrl || null;
+        
+        if(logoUrl) {
+            logoUrl = await this._rehostLogo(logoUrl);
+        }
+        if(iconUrl) {
+            iconUrl = await this._rehostLogo(iconUrl);
+        }
+        
         return {
             iconUrl,
-            logoUrl: logo || wordmark || visualUrl || null
+            logoUrl
         };
     }
     

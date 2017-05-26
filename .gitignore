@@ -34,3 +34,4 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 config.json
+public/cdn/*
