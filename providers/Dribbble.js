@@ -27,7 +27,7 @@ export default class Dribbble {
             // this forces us to play around with the timestamps a little; we'll divide the difference from now by 3
             const realDate = moment(post.created_at);
             const now = moment();
-            const date = moment(+now - now.diff(realDate) / 3);
+            const date = moment(+now - (now.diff(realDate) / 3));
             
             const card: Card = {
                 type: Dribbble.type,

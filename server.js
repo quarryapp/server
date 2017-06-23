@@ -29,8 +29,7 @@ class Server {
 
             
             app.use(cors({
-                origin: (origin, callback) => 
-                    config.whitelistedHosts.includes(origin) ? callback(null, true) : callback(new Error('Incorrect origin'))
+                origin: (origin, callback) => !origin || config.whitelistedHosts.includes(origin) ? callback(null, true) : callback(new Error('Incorrect origin'))
             }));
             
             app.use(morgan('dev'));
@@ -81,7 +80,7 @@ class Server {
             }
     
             app.listen(port);
-            logger.info(`${emoji.fire}  huntr is listening on http://localhost:${port}/`);
+            logger.info(`${emoji.dog}  quarry is listening on http://localhost:${port}/`);
         } catch(ex) {
             logger.error(ex);
             process.exit();

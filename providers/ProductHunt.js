@@ -5,6 +5,7 @@ import moment from 'moment';
 import { URL } from 'url';
 import path from 'path';
 import throwIfNotOK from '../services/throwIfNotOK';
+import rehostImage from '../services/rehostImage';
 
 const PRODUCTHUNT_ASSET_BASE = 'https://ph-files.imgix.net/';
 
@@ -60,6 +61,13 @@ export default class ProductHunt {
                 if(index < 2) {
                     size = 'medium';
                 }
+                
+                let thumbUrl;
+                
+                if(imageUrl) {
+                    thumbUrl = imageUrl + '?auto=format&frame=1&fit=crop&h=10&w=10';
+                    imageUrl = await rehostImage(imageUrl);
+                }
 
                 const card: Card = {
                     type: ProductHunt.type,
@@ -73,7 +81,7 @@ export default class ProductHunt {
                     data: {
                         tagline: post.tagline,
                         image: imageUrl,
-                        thumb: imageUrl + "?auto=format&frame=1&fit=crop&h=10&w=10",
+                        thumb: imageUrl ? thumbUrl : null,
                         imageType
                     }
                 };

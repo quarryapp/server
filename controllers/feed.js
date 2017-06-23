@@ -100,7 +100,7 @@ export default class FeedController {
                         }
                     }
                     catch(ex) {
-                        logger.error(ex);
+                        logger.error(`Failed getting ${providerModel.type} (config: ${JSON.stringify(providerModel.config)})`, ex);
                         continue;
                     }
                     
