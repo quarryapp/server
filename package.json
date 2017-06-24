@@ -29,6 +29,7 @@
     "node-emoji": "^1.5.1",
     "universal-fetch": "^1.0.0",
     "validate": "^3.0.1",
+    "validator": "^7.1.0",
     "winston": "^2.3.1"
   },
   "devDependencies": {

@@ -3,7 +3,7 @@
 import type { Card } from '../entities';
 import throwIfNotOK from '../services/throwIfNotOK';
 import isEqual from 'lodash/isEqual';
-import isUrl from 'validator/lib/isUrl';
+import isUrl from 'validator/lib/isURL';
 import logger from '../logger';
 import rehostImage from '../services/rehostImage';
 
