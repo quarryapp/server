@@ -21,7 +21,18 @@ export default async (url: string): Promise<?string> => {
     logger.debug(contentType, ext);
     const filename = path.basename(url, ext) + '.' + ext;
     const fullpath = `${__dirname}/../public/cdn/${filename}`;
-    if (!(await stat(fullpath)).isFile()) {
+    let exists = false;
+    try {
+        exists = (await stat(fullpath)).isFile();
+    }
+    catch(ex) {
+        // kind of nasty but fs.exists is deprecated so this is the only way to check for existence of a file
+        if(ex.code !== 'ENOENT') {
+            throw ex;
+        }
+    }
+    
+    if (!exists) {
         const dest = fs.createWriteStream(fullpath);
         response.body.pipe(dest);
     }
